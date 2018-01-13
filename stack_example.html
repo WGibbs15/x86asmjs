@@ -1,0 +1,48 @@
+<html>
+
+<head><!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+	<stack>
+		<data>,,,,,,,,,,</data>
+		<regs>eax:, edx:, esp: 0x10004, ebp: 0x100a0, eip: 0x80483a5</regs>
+		<pre><code>callee:
+    push ebp              ;0x8048394
+    mov ebp, esp          ;0x8048395
+    mov eax, [ebp+0xc]    ;0x8048397
+    mov edx, [ebp+0x8]    ;0x804839a
+    add eax, edx          ;0x804839d
+    add eax, 0x1          ;0x80483a0
+    pop ebp               ;0x80483a3
+    ret                   ;0x80483a4
+main:
+    push ebp              ;0x80483a5
+    mov ebp, esp          ;0x80483a6
+    sub esp, 0x18         ;0x80483a8
+    movl [esp+0x4], 0x28  ;0x80483ab
+    movl [esp], 0xa   	  ;0x80483b3
+    call callee           ;0x80483ba
+    mov [ebp-0x4], eax    ;0x80483bf
+    mov eax, [ebp-0x4]    ;0x80483c2
+    leave                 ;0x80483c5
+    ret                   ;0x80483c6</code></pre>
+	</stack>
+	<stack>
+		<data>...,,,...,Grabage</data>
+		<regs>eax: 0xa, ebx:, esp: 0x10000</regs>
+		<pre><code>push eax
+pop ebx</code></pre>
+	</stack>
+    <script src="main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+</body>
+
+</html>
