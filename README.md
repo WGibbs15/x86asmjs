@@ -20,13 +20,13 @@ pop ebx</code></pre>
 	</stack>
 ```
 
-Make sure That everything is enclosed by the <stack> tag
+Make sure That everything is enclosed by the &lt;stack&gt; tag
 
-The <data> tag should contain your comma separated initial stack values and size. The size is also automatically adjusted if your run out of room.
+The &lt;data&gt; tag should contain your comma separated initial stack values and size. The size is also automatically adjusted if your run out of room.
 
-The <regs> tag is for your registers as well as their initial values. Make sure that the values for each register is separated by a colon even if there isn't a starting value.
+The &lt;regs&gt; tag is for your registers as well as their initial values. Make sure that the values for each register is separated by a colon even if there isn't a starting value.
 
-The <pre><code> tags should contain your formatted assembly code. Make sure to add the addresses of the instructions as comments if you want the eip to function.
+The &lt;pre&gt;&lt;code&gt; tags should contain your formatted assembly code. Make sure to add the addresses of the instructions as comments if you want the eip to function.
 
 ```
     push ebp              ;0x8048394
