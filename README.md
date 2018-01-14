@@ -13,7 +13,7 @@ You only need to add bootstrap to your project which you can do [here](https://w
 
 ```
 	<stack>
-		<data>...,,,...,Garbage</data>
+		<data>..., , , ..., Garbage</data>
 		<regs>eax: 0xa, ebx:, esp: 0x10000</regs>
 		<pre><code>push eax
 pop ebx</code></pre>

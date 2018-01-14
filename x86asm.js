@@ -74,7 +74,8 @@ function stackSetup() {
             regs: {},
             regBlocks: {},
             initRegs: {},
-            initStackVals: []
+            initStackVals: [],
+            addedRows: 0
         };
 
         var regStack = stacks[i].getElementsByTagName("regs")[0].textContent; //Register with Data stacks
@@ -164,7 +165,20 @@ function stackSetup() {
                     removeHighlight(currStack.children[i].children[0], "ebp");
                 }
 
+                console.log("HERE", currStackObject.addedRows);
+                //Removing any added rows
+                var removeBlocks = [];
+                for (var i = currStack.children.length - 1; i > currStack.children.length - currStackObject.addedRows - 1; i--) {
+                    console.log(currStack.children[i]);
+                    removeBlocks.push(currStack.children[i]);
+                }
+
+                for (var i = 0; i < removeBlocks.length; i++) {
+                    currStack.removeChild(removeBlocks[i]);
+                }
+
                 currStackObject.segFault.textContent = "";
+                currStackObject.addedRows = 0;
 
                 resetRegs(currStackObject, regStack); //Reset Register Values
                 resetStackVals(currStackObject, currStack); //Reset Stack Values
@@ -296,6 +310,8 @@ function relativeUpdate(currStack, stackObject, regName) {
         var updatedIdx = (parseInt(stackObject.regs['esp']) - parseInt(stackObject.regs['ebp'])) / 4;
         stackObject.currBlockIdx = stackObject.ebpBlockIdx - updatedIdx;
         if (stackObject.currBlockIdx >= currStack.children.length) {
+            stackObject.addedRows += stackObject.currBlockIdx - currStack.children.length + 1;
+            console.log("ROWS", stackObject.currBlockIdx - currStack.children.length + 1);
             increaseStackSize(currStack, stackObject.currBlockIdx - currStack.children.length + 1);
         }
         stackObject.currBlock = currStack.children[stackObject.currBlockIdx].children[0];
@@ -333,6 +349,24 @@ function removeHighlight(elem, className) {
 
     elem.innerHTML = inner.join('\n');
 
+}
+
+function hasOffset(term) {
+    if (term.indexOf('[') > -1) {
+        var expr = term.replace('[', '').replace(']', '');
+        var offset = 0;
+        var reg = "";
+        if (expr.indexOf('-') > -1) {
+            offset = -parseInt(expr.split('-')[1]);
+            reg = expr.split('-')[0];
+        } else if (expr.indexOf('+') > -1) {
+            offset = parseInt(expr.split('+')[1]);
+            reg = expr.split('+')[0];
+        }
+        console.log("OFFSET", offset);
+        return [true, reg, offset];
+    }
+    return [false];
 }
 
 function highlightText(elem, lineNum, className) {
@@ -381,7 +415,8 @@ function findStartingBlock(currStack) {
 
 function updateStackObjectBlock(currStack, stackObject) {
     if (stackObject.currBlockIdx >= currStack.children.length) {
-        increaseStackSize(currStack, stackObject.currBlockIdx - currStack.length + 1); //Increase Length to necessary size + 1
+        stackObject.addedRows += stackObject.currBlockIdx - currStack.childrenlength + 1;
+        increaseStackSize(currStack, stackObject.currBlockIdx - currStack.children.length + 1); //Increase Length to necessary size + 1
     }
     stackObject.currBlock = currStack.children[stackObject.currBlockIdx].children[0];
     if (stackObject.ebpBlockIdx > -1 && stackObject.ebpBlockIdx < currStack.children.length) {
@@ -541,15 +576,37 @@ function parseCall(words, currStack, stackObject) {
 }
 
 //Parses sub instruction
-function parseSub(words, currStack, stackObject) { //TODO A LOT
-    var val = parseInt(words[2]);
+function parseSub(words, currStack, stackObject) { 
+    //Has offset in one of the arguments
+    var reg1Offset = hasOffset(words[1]);
+    var reg2Offset = hasOffset(words[2]);
 
-    if (words[1] in stackObject.regs) {
-        updateRegister(true, -val, words[1], stackObject);
+    var isReg1 = (words[1] in stackObject.regs);
+    var isReg2 = (words[2] in stackObject.regs);
+
+    if (!reg1Offset[0] && !reg2Offset[0]) {
+
+        var val = 0;
+        if (isReg1 && isReg2) {
+            val = parseInt(stackObject.regs[words[2]]);
+            updateRegister(true, -val, words[1], stackObject);
+        } else if (isReg1 && !isReg2) {
+            val = parseInt(words[2]);
+            updateRegister(true, -val, words[1], stackObject);
+        }
         if (words[1] === "esp") {
             removeHighlight(currStack, "highlight");
             relativeUpdate(currStack, stackObject, "esp");
             highlightText(stackObject.currBlock, 0, "highlight");
+        }
+    } else {
+        if (reg1Offset[0] && !reg2Offset[0]) { //TODO THIS
+            updateRegister(true, -reg1Offset[2], words[1], stackObject);
+            if (words[1] === "esp") {
+                removeHighlight(currStack, "highlight");
+                relativeUpdate(currStack, stackObject, "esp");
+                highlightText(stackObject.currBlock, 0, "highlight");
+            }
         }
     }
 
