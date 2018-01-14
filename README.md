@@ -5,7 +5,7 @@ Turns x86 code into a working example with a stack.
 
 Clone the repo and place the x86asm.js file in your project
 
-##Prerequisites
+## Prerequisites
 
 You don't need anything else for this to work, but I would highly recommend downloading the necessary [highlight.js](https://highlightjs.org/download/) file and adding it to your project to make your x86 look nice
 .
