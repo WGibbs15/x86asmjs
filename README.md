@@ -7,7 +7,7 @@ Clone the repo and place the x86asm.js file in your project
 
 ## Prerequisites
 
-You don't need anything else for this to work, but I would highly recommend downloading the necessary [highlight.js](https://highlightjs.org/download/) file and adding it to your project to make your x86 look nice
+You only need to add bootstrap to your project which you can do [here](https://www.w3schools.com/bootstrap/bootstrap_get_started.asp), but I would highly recommend downloading the necessary [highlight.js](https://highlightjs.org/download/) file and adding it to your project to make your x86 look nice
 .
 ### Example
 

@@ -62,13 +62,15 @@ function stackSetup() {
         registerRow.appendChild(registerInnerCol);
 
         var stackObject = { //Keeps track of stack values & current line
+            button: null,
             lineNo: 0,
             initLineNo: 0,
             currBlockIdx: 0,
-            currBlock: document.createElement("div"),
+            currBlock: null,
             ebpBlockIdx: 0,
             ebpBlock: document.createElement("div"),
             startAddr: "0x10000",
+            segFault: null,
             regs: {},
             regBlocks: {},
             initRegs: {},
@@ -123,10 +125,19 @@ function stackSetup() {
         myButton.type = "button";
         myButton.className = "btn btn-success btn-lg center-block";
         myButton.style.marginBotton = "10px";
+        myButton.style.outline = "none";
         myButton.textContent = "Start";
         myButton.id = "stack-button-" + i;
 
         insideCodeRow.appendChild(myButton);
+
+        var segFaultText = document.createElement("h5");
+        segFaultText.className += "text-center";
+        segFaultText.style.color = "red";
+        insideCodeRow.appendChild(segFaultText);
+
+        stackObject.segFault = segFaultText;
+        stackObject.button = myButton;
 
         //console.log(stackObjects);
         globalStackObjects.push(stackObject);
@@ -152,6 +163,9 @@ function stackSetup() {
                     removeHighlight(currStack.children[i].children[0], "highlight");
                     removeHighlight(currStack.children[i].children[0], "ebp");
                 }
+
+                currStackObject.segFault.textContent = "";
+
                 resetRegs(currStackObject, regStack); //Reset Register Values
                 resetStackVals(currStackObject, currStack); //Reset Stack Values
                 currStackObject.currBlockIdx = 0; //Set initial block to 0
@@ -425,26 +439,27 @@ function getBlock(currVal, regOff, currStack, stackObject) {
     } else if (regOff.indexOf("esp") > -1) { //Get ESP Index
         blockIdx += stackObject.currBlockIdx;
     }
+
     var child = currStack.children[blockIdx].children[0];
     return child;
 }
 
-function parseStrCpy(words, currStack, regStack) {
-    var result = parseRegStack(regStack);
+//Parses strcpy
+function parseStrCpy(words, currStack, stackObject) {
 
-    var regs = result[0];
-    var vals = result[1];
-    var currVal = vals[regs.indexOf("esp")];
-    var param1 = getBlock(currVal, "esp+0", currStack);
-    var param2 = getBlock(currVal, "esp+4", currStack);
-    var buffAddr = vals[regs.indexOf("eax")];
+    var currVal = stackObject.regs['esp'];
+    var param1 = stackObject.currBlock;
+    var param2 = currStack.children[stackObject.currBlockIdx - 1].children[0];
+    var buffAddr = stackObject.regs['eax'];
 
 
     if (param2.textContent === "0x8048504") {
         var cseStr = "asu cse 340 fall 2015 rocks!"
         for (var i = 0; i < cseStr.length; i += 4) {
             var subStr = '"' + cseStr.substring(i, i + 4) + '"';
-            var currBlock = getBlock(buffAddr, "esp+" + i, currStack);
+            var blockIdx = stackObject.currBlockIdx - (parseInt(buffAddr) + i - parseInt(stackObject.regs['esp'])) / 4;
+            console.log(blockIdx, stackObject.currBlockIdx);
+            var currBlock = currStack.children[blockIdx].children[0];
             while (currBlock.children.length > 0) {
                 currBlock = currBlock.children[currBlock.children.length - 1];
             }
@@ -452,7 +467,7 @@ function parseStrCpy(words, currStack, regStack) {
         }
     }
 }
-
+//Parses lea instruction
 function parseLEA(words, currStack, stackObject) {
 
     var sourceReg = sourceReg = words[2].replace("[", "").replace("]", "");
@@ -470,6 +485,7 @@ function parseLEA(words, currStack, stackObject) {
     updateRegister(false, offsetAddr, words[1], stackObject);
 }
 
+//Parses leave instruction
 function parseLeave(words, currStack, stackObject) {
     parseMov("mov esp ebp".split(" "), currStack, stackObject);
     parsePop("pop ebp".split(" "), currStack, stackObject);
@@ -484,9 +500,14 @@ function parseRet(words, currStack, stackObject) {
         for (var i = 0; i < code.length; i++) { //Getting line of next instruction
             if (code[i].indexOf(stackObject.regs['eip']) > -1) {
                 stackObject.lineNo = i - 1;
-                break;
+                return;
             }
         }
+        //If the address in the EIP is not able to be returned within the code segment then segfault.
+        stackObject.segFault.innerHTML = ("SEGFAULT: " + stackObject.regs['eip']).bold();
+        stackObject.button.textContent = "Restart";
+        stackObject.button.classList.remove('btn-success');
+        stackObject.button.classList.add('btn-danger');
     }
 }
 
@@ -520,7 +541,7 @@ function parseCall(words, currStack, stackObject) {
 }
 
 //Parses sub instruction
-function parseSub(words, currStack, stackObject) {
+function parseSub(words, currStack, stackObject) { //TODO A LOT
     var val = parseInt(words[2]);
 
     if (words[1] in stackObject.regs) {

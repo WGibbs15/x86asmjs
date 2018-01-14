@@ -23,7 +23,7 @@
     mov eax, [ebp+0x8]         ;0x80483fa
     mov [esp+0x4], eax         ;0x80483fd
     lea eax, [ebp-0xc]         ;0x8048401
-    mov [esp+0x0], eax         ;0x8048404
+    mov [esp], eax             ;0x8048404
     call strcpy                ;0x8048407
     leave                      ;0x804840c
     ret                        ;0x804840d
@@ -76,7 +76,7 @@ pop ebx</code></pre>
 	</stack>
 
 
-    <script src="main.js"></script>
+    <script src="x86asm.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 </body>
 
