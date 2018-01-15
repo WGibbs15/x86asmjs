@@ -157,7 +157,7 @@ function stackSetup() {
         stackObject.segFault = segFaultText;
         stackObject.button = myButton;
 
-        //console.log(stackObjects);
+        //
         globalStackObjects.push(stackObject);
         stackVals.push(myStack);
         stackRegs.push(registerInnerCol);
@@ -186,11 +186,11 @@ function stackSetup() {
                     removeHighlight(currStackObject.regBlocks[key], "reg", false);
                 }
 
-                console.log("HERE", currStackObject.addedRows);
+                
                 //Removing any added rows
                 var removeBlocks = [];
                 for (var i = currStack.children.length - 1; i > currStack.children.length - currStackObject.addedRows - 1; i--) {
-                    console.log(currStack.children[i]);
+                    
                     removeBlocks.push(currStack.children[i]);
                 }
 
@@ -332,7 +332,7 @@ function relativeUpdate(currStack, stackObject, regName) {
         stackObject.currBlockIdx = stackObject.ebpBlockIdx - updatedIdx;
         if (stackObject.currBlockIdx >= currStack.children.length) {
             stackObject.addedRows += stackObject.currBlockIdx - currStack.children.length + 1;
-            console.log("ROWS", stackObject.currBlockIdx - currStack.children.length + 1);
+            
             increaseStackSize(currStack, stackObject.currBlockIdx - currStack.children.length + 1);
         }
         stackObject.currBlock = currStack.children[stackObject.currBlockIdx].children[0];
@@ -397,7 +397,7 @@ function hasOffset(term) {
             offset = parseInt(expr.split('+')[1]);
             reg = expr.split('+')[0];
         }
-        console.log("OFFSET", offset);
+        
         return [true, reg, offset];
     }
     return [false];
@@ -504,7 +504,7 @@ function updateRegister(inc, val, regName, stackObject) {
         regVal = val;
 
     stackObject.regs[regName] = "0x" + regVal.toString(16).replace('0x', ''); //Set the new value in stackObject
-    console.log(stackObject.regBlocks[regName]);
+    
     stackObject.regBlocks[regName].children[0].textContent = stackObject.regs[regName]; //Set corresponding block text
     for (key in stackObject.regBlocks) {
         if (key.toLowerCase() != "eip") {
@@ -553,7 +553,7 @@ function parseStrCpy(words, currStack, stackObject) {
         for (var i = 0; i < cseStr.length; i += 4) {
             var subStr = '"' + cseStr.substring(i, i + 4) + '"';
             var blockIdx = stackObject.currBlockIdx - (parseInt(buffAddr) + i - parseInt(stackObject.regs['esp'])) / 4;
-            console.log(blockIdx, stackObject.currBlockIdx);
+            
             var currBlock = currStack.children[blockIdx].children[0];
             while (currBlock.children.length > 0) {
                 currBlock = currBlock.children[currBlock.children.length - 1];
