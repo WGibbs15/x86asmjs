@@ -51,6 +51,7 @@ function stackSetup() {
 
         var stackBottomText = document.createElement("p");
         stackBottomText.className += "text-center";
+        stackBottomText.style.marginTop = "10px";
         stackBottomText.textContent = "0x00000000";
         stackBottomText.id = "stack-bottom-text-" + i;
         stackWrapper.appendChild(stackBottomText);
@@ -98,7 +99,7 @@ function stackSetup() {
         var regStack = stacks[i].getElementsByTagName("regs")[0].textContent; //Register with Data stacks
         var mainStack = stacks[i].getElementsByTagName("data")[0].textContent; //Main Stack
         var code = stacks[i].getElementsByTagName("pre")[0]; //Main Stack
-        code.style.fontSize = "0.7vw"; //TODO: MAYBE FIX THIS?????
+        //code.style.fontSize = "0.7vw"; //TODO: MAYBE FIX THIS?????
 
         code.children[0].className += "x86asm"
         stackObject.code = code.children[0];
@@ -360,11 +361,11 @@ function removeHighlight(elem, className, isCode) {
 
                 if (matched.length > 1) {
                     if (inner[i].match('style="(.*?)"')[0].indexOf("background") > -1) { //If correct style element
-                        inner[i] = inner[i].replace(/style="(.*?)"/gi, 'style="background: ' + color + ';"');
+                        inner[i] = inner[i].replace(/style="(.*?)"/i, 'style="background: ' + color + ';"');
                     }
                 } else {
                     if (inner[i].match('style="(.*?)"')[0].indexOf("background") > -1) {
-                        inner[i] = inner[i].replace(/style="(.*?)"/gi, 'style="background: none;"');
+                        inner[i] = inner[i].replace(/style="(.*?)"/i, 'style="background: none;"');
                     }
                 }
             }
@@ -430,11 +431,11 @@ function highlightText(elem, lineNum, className, isCode) {
         }
 
         if (found) { //Span already exists
-            inner[lineNum] = inner[lineNum].replace(/style="(.*?)"/gi, 'style="background: ' + color + ';"'); //Replaces Background with updated highlight
+            inner[lineNum] = inner[lineNum].replace(/style="(.*?)"/i, 'style="background: ' + color + ';"'); //Replaces Background with updated highlight
             var matched = inner[lineNum].match('class="(.*?)"')[0]; //Gets current classes
             matched = matched.substring(0, matched.length - 1) + ' ' + className + '"';
 
-            inner[lineNum] = inner[lineNum].replace(/class="(.*?)"/gi, matched); //Replaces classes with updated version;
+            inner[lineNum] = inner[lineNum].replace(/class="(.*?)"/i, matched); //Replaces classes with updated version;
         } else {
             inner[lineNum] = "<span class='" + className + "' style='background: " + color + "'>" + inner[lineNum] + "</span>"; //Creates span if one doesn't exist
         }
