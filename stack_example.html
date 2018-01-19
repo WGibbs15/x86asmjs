@@ -1,20 +1,18 @@
 <html>
 
-<head><!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<head>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-<!-- jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
-<!-- Latest compiled JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-
-
     <stack>
-        <data>, , , , , , , , , , , , , ,</data>
+        <data>, , , , , , , , , , , , , , </data>
         <regs>eax:, esp: 0x10004, ebp: 0x100a0, eip: 0x804840e</regs>
         <pre><code>mycpy: 
     push ebp                   ;0x80483f4
@@ -40,12 +38,10 @@ main:
     leave                      ;0x8048435
     ret                        ;0x8048436</code></pre>
     </stack>
-
-
-	<stack>
-		<data>, , , , , , , , , , </data>
-		<regs>eax:, edx:, esp: 0x10004, ebp: 0x100a0, eip: 0x80483a5</regs>
-		<pre><code>callee:
+    <stack>
+        <data>, , , , , , , , , , </data>
+        <regs>eax:, edx:, esp: 0x10004, ebp: 0x100a0, eip: 0x80483a5</regs>
+        <pre><code>callee:
     push ebp              ;0x8048394
     mov ebp, esp          ;0x8048395
     mov eax, [ebp+0xc]    ;0x8048397
@@ -59,25 +55,20 @@ main:
     mov ebp, esp          ;0x80483a6
     sub esp, 0x18         ;0x80483a8
     movl [esp+0x4], 0x28  ;0x80483ab
-    movl [esp], 0xa   	  ;0x80483b3
+    movl [esp], 0xa       ;0x80483b3
     call callee           ;0x80483ba
     mov [ebp-0x4], eax    ;0x80483bf
     mov eax, [ebp-0x4]    ;0x80483c2
     leave                 ;0x80483c5
     ret                   ;0x80483c6</code></pre>
-	</stack>
-
-
-	<stack>
-		<data>..., , , ..., Garbage</data>
-		<regs>eax: 0xa, ebx:, esp: 0x10000</regs>
-		<pre><code>push eax
+    </stack>
+    <stack>
+        <data>..., ..., , ..., Garbage</data>
+        <regs>eax: 0xa, ebx:, esp: 0x10000</regs>
+        <pre><code>push eax
 pop ebx</code></pre>
-	</stack>
-
-
+    </stack>
     <script src="x86asm.js"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 </body>
 
 </html>
