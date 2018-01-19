@@ -19,7 +19,7 @@ function stackSetup() {
 
         //Center Inside Row
         var centerBlock = document.createElement("div");
-        centerBlock.className += "col-sm-6 col-sm-offset-3 well";
+        centerBlock.className += "col-sm-12 well";
         mainRoot.appendChild(centerBlock);
 
         //Inside of the block
@@ -32,11 +32,29 @@ function stackSetup() {
         valRow.className += "row"
         insideContents.appendChild(valRow);
 
+        //Wraps stack with above and below text
+        var stackWrapper = document.createElement("div");
+        stackWrapper.className += "col-sm-5 col-sm-offset-2"
+        stackWrapper.style.paddingBottom = "40px";
+        valRow.appendChild(stackWrapper)
+
+        var stackTopText = document.createElement("p");
+        stackTopText.className += "text-center";
+        stackTopText.textContent = "0xFFFFFFFF";
+        stackTopText.id = "stack-top-text-" + i;
+        stackWrapper.appendChild(stackTopText);
+
         //Col for the actual stack of values
         var stackValCol = document.createElement("div");
-        stackValCol.className += "col-sm-5 col-sm-offset-2"
-        stackValCol.style.paddingBottom = "40px";
-        valRow.appendChild(stackValCol);
+        stackValCol.id = "stack-vals-" + i;
+        stackWrapper.appendChild(stackValCol);
+
+        var stackBottomText = document.createElement("p");
+        stackBottomText.className += "text-center";
+        stackBottomText.style.marginTop = "10px";
+        stackBottomText.textContent = "0x00000000";
+        stackBottomText.id = "stack-bottom-text-" + i;
+        stackWrapper.appendChild(stackBottomText);
 
         //Col for the code
         var codeCol = document.createElement("div");
@@ -81,7 +99,7 @@ function stackSetup() {
         var regStack = stacks[i].getElementsByTagName("regs")[0].textContent; //Register with Data stacks
         var mainStack = stacks[i].getElementsByTagName("data")[0].textContent; //Main Stack
         var code = stacks[i].getElementsByTagName("pre")[0]; //Main Stack
-        code.style.fontSize = "0.7vw"; //TODO: MAYBE FIX THIS?????
+        //code.style.fontSize = "0.7vw"; //TODO: MAYBE FIX THIS?????
 
         code.children[0].className += "x86asm"
         stackObject.code = code.children[0];
@@ -140,7 +158,7 @@ function stackSetup() {
         stackObject.segFault = segFaultText;
         stackObject.button = myButton;
 
-        //console.log(stackObjects);
+        //
         globalStackObjects.push(stackObject);
         stackVals.push(myStack);
         stackRegs.push(registerInnerCol);
@@ -158,18 +176,22 @@ function stackSetup() {
                 $(this).addClass('btn-success');
                 this.textContent = "Start";
 
-                removeHighlight(elem, "highlight");
+                removeHighlight(elem, "highlight", true);
 
                 for (var i = 0; i < currStack.children.length; i++) {
-                    removeHighlight(currStack.children[i].children[0], "highlight");
-                    removeHighlight(currStack.children[i].children[0], "ebp");
+                    removeHighlight(currStack.children[i], "highlight", false);
+                    removeHighlight(currStack.children[i], "ebp", false);
                 }
 
-                console.log("HERE", currStackObject.addedRows);
+                for (key in currStackObject.regBlocks) {
+                    removeHighlight(currStackObject.regBlocks[key], "reg", false);
+                }
+
+                
                 //Removing any added rows
                 var removeBlocks = [];
                 for (var i = currStack.children.length - 1; i > currStack.children.length - currStackObject.addedRows - 1; i--) {
-                    console.log(currStack.children[i]);
+                    
                     removeBlocks.push(currStack.children[i]);
                 }
 
@@ -264,7 +286,7 @@ function makeRegStack(elem, stackObject) {
         para.style.marginTop = "5%";
         para.style.fontSize = "100%";
         var text = document.createTextNode(stackObject.regs[key]);
-        stackObject.regBlocks[key] = text;
+        stackObject.regBlocks[key] = node;
 
         var paraClone = para.cloneNode(true);
         var regText = document.createTextNode(key);
@@ -311,7 +333,7 @@ function relativeUpdate(currStack, stackObject, regName) {
         stackObject.currBlockIdx = stackObject.ebpBlockIdx - updatedIdx;
         if (stackObject.currBlockIdx >= currStack.children.length) {
             stackObject.addedRows += stackObject.currBlockIdx - currStack.children.length + 1;
-            console.log("ROWS", stackObject.currBlockIdx - currStack.children.length + 1);
+            
             increaseStackSize(currStack, stackObject.currBlockIdx - currStack.children.length + 1);
         }
         stackObject.currBlock = currStack.children[stackObject.currBlockIdx].children[0];
@@ -322,32 +344,45 @@ function relativeUpdate(currStack, stackObject, regName) {
     }
 }
 
-function removeHighlight(elem, className) {
-    var inner = elem.innerHTML.split('\n');
+function removeHighlight(elem, className, isCode) {
     var color = "lightblue";
 
     if (className === "ebp") {
         color = "yellow";
     }
 
-    for (var i = 0; i < inner.length; i++) { //Iterate through all lines
-        if (inner[i].indexOf(className) > -1) { //If line contains class name
-            inner[i] = inner[i].replace(className, '');
-            var matched = inner[i].match('class="(.*?)"')[0].replace('class="', '').trim(); //Get other classes in line;
+    if (isCode) {
 
-            if (matched.length > 1) {
-                if (inner[i].match('style="(.*?)"')[0].indexOf("background") > -1) { //If correct style element
-                    inner[i] = inner[i].replace(/style="(.*?)"/gi, 'style="background: ' + color + ';"');
-                }
-            } else {
-                if (inner[i].match('style="(.*?)"')[0].indexOf("background") > -1) {
-                    inner[i] = inner[i].replace(/style="(.*?)"/gi, 'style="background: none;"');
+        var inner = elem.innerHTML.split('\n');
+        for (var i = 0; i < inner.length; i++) { //Iterate through all lines
+            if (inner[i].indexOf(className) > -1) { //If line contains class name
+                inner[i] = inner[i].replace(className, '');
+                var matched = inner[i].match('class="(.*?)"')[0].replace('class="', '').trim(); //Get other classes in line;
+
+                if (matched.length > 1) {
+                    if (inner[i].match('style="(.*?)"')[0].indexOf("background") > -1) { //If correct style element
+                        inner[i] = inner[i].replace(/style="(.*?)"/i, 'style="background: ' + color + ';"');
+                    }
+                } else {
+                    if (inner[i].match('style="(.*?)"')[0].indexOf("background") > -1) {
+                        inner[i] = inner[i].replace(/style="(.*?)"/i, 'style="background: none;"');
+                    }
                 }
             }
         }
-    }
 
-    elem.innerHTML = inner.join('\n');
+        elem.innerHTML = inner.join('\n');
+    } else if (className != "reg") {
+        try {
+            elem.classList.remove(className);
+            elem.style.background = color;
+            if (!elem.classList.contains("ebp") && !elem.classList.contains("highlight")) {
+                elem.style.background = "none";
+            }
+        } catch (error) {}
+    } else {
+        elem.style.background = "none";
+    }
 
 }
 
@@ -363,40 +398,59 @@ function hasOffset(term) {
             offset = parseInt(expr.split('+')[1]);
             reg = expr.split('+')[0];
         }
-        console.log("OFFSET", offset);
+        
         return [true, reg, offset];
     }
     return [false];
 }
 
-function highlightText(elem, lineNum, className) {
-    var inner = elem.innerHTML.split('\n');
-    var color = "yellow";
+function getStackBlockParent(currStack, stackObject, isEBP) {
+    if (isEBP)
+        return currStack.children[stackObject.ebpBlockIdx];
+    else
+        return currStack.children[stackObject.currBlockIdx];
+}
 
-    if (inner[lineNum].indexOf(className) > -1) {
-        return;
-    }
+function highlightText(elem, lineNum, className, isCode) {
+    var color = "yellow";
 
     if (className === "ebp") {
         color = "lightblue";
     }
 
-    var found = false;
-    if (inner[lineNum].match('style="(.*?)"') != null) { //If it has a style
-        found = true;
-    }
+    if (isCode) { //If this is from x86 code
+        var inner = elem.innerHTML.split('\n');
+        if (inner[lineNum].indexOf(className) > -1) {
+            return;
+        }
 
-    if (found) { //Span already exists
-        inner[lineNum] = inner[lineNum].replace(/style="(.*?)"/gi, 'style="background: ' + color + ';"'); //Replaces Background with updated highlight
-        var matched = inner[lineNum].match('class="(.*?)"')[0]; //Gets current classes
-        matched = matched.substring(0, matched.length - 1) + ' ' + className + '"';
 
-        inner[lineNum] = inner[lineNum].replace(/class="(.*?)"/gi, matched); //Replaces classes with updated version;
+        var found = false;
+        if (inner[lineNum].match('style="(.*?)"') != null) { //If it has a style
+            found = true;
+        }
+
+        if (found) { //Span already exists
+            inner[lineNum] = inner[lineNum].replace(/style="(.*?)"/i, 'style="background: ' + color + ';"'); //Replaces Background with updated highlight
+            var matched = inner[lineNum].match('class="(.*?)"')[0]; //Gets current classes
+            matched = matched.substring(0, matched.length - 1) + ' ' + className + '"';
+
+            inner[lineNum] = inner[lineNum].replace(/class="(.*?)"/i, matched); //Replaces classes with updated version;
+        } else {
+            inner[lineNum] = "<span class='" + className + "' style='background: " + color + "'>" + inner[lineNum] + "</span>"; //Creates span if one doesn't exist
+        }
+
+        elem.innerHTML = inner.join('\n');
+    } else if (className != "reg") { //If this is for stackVals
+        if (elem.classList.contains(className)) {
+            return;
+        } else {
+            elem.classList.add(className);
+            elem.style.background = color;
+        }
     } else {
-        inner[lineNum] = "<span class='" + className + "' style='background: " + color + "'>" + inner[lineNum] + "</span>"; //Creates span if one doesn't exist
+        elem.style.background = "lightgreen";
     }
-
-    elem.innerHTML = inner.join('\n');
 
 }
 
@@ -451,7 +505,14 @@ function updateRegister(inc, val, regName, stackObject) {
         regVal = val;
 
     stackObject.regs[regName] = "0x" + regVal.toString(16).replace('0x', ''); //Set the new value in stackObject
-    stackObject.regBlocks[regName].textContent = stackObject.regs[regName]; //Set corresponding block text
+    
+    stackObject.regBlocks[regName].children[0].textContent = stackObject.regs[regName]; //Set corresponding block text
+    for (key in stackObject.regBlocks) {
+        if (key.toLowerCase() != "eip") {
+            removeHighlight(stackObject.regBlocks[key], "reg", false);
+        }
+    }
+    highlightText(stackObject.regBlocks[regName], 0, "reg", false);
 }
 
 //Gets block as an offset of esp or ebp
@@ -493,7 +554,7 @@ function parseStrCpy(words, currStack, stackObject) {
         for (var i = 0; i < cseStr.length; i += 4) {
             var subStr = '"' + cseStr.substring(i, i + 4) + '"';
             var blockIdx = stackObject.currBlockIdx - (parseInt(buffAddr) + i - parseInt(stackObject.regs['esp'])) / 4;
-            console.log(blockIdx, stackObject.currBlockIdx);
+            
             var currBlock = currStack.children[blockIdx].children[0];
             while (currBlock.children.length > 0) {
                 currBlock = currBlock.children[currBlock.children.length - 1];
@@ -576,7 +637,7 @@ function parseCall(words, currStack, stackObject) {
 }
 
 //Parses sub instruction
-function parseSub(words, currStack, stackObject) { 
+function parseSub(words, currStack, stackObject) {
     //Has offset in one of the arguments
     var reg1Offset = hasOffset(words[1]);
     var reg2Offset = hasOffset(words[2]);
@@ -595,17 +656,17 @@ function parseSub(words, currStack, stackObject) {
             updateRegister(true, -val, words[1], stackObject);
         }
         if (words[1] === "esp") {
-            removeHighlight(currStack, "highlight");
+            removeHighlight(getStackBlockParent(currStack, stackObject, false), "highlight", false);
             relativeUpdate(currStack, stackObject, "esp");
-            highlightText(stackObject.currBlock, 0, "highlight");
+            highlightText(getStackBlockParent(currStack, stackObject, false), 0, "highlight", false);
         }
     } else {
         if (reg1Offset[0] && !reg2Offset[0]) { //TODO THIS
             updateRegister(true, -reg1Offset[2], words[1], stackObject);
             if (words[1] === "esp") {
-                removeHighlight(currStack, "highlight");
+                removeHighlight(getStackBlockParent(currStack, stackObject, false), "highlight", false);
                 relativeUpdate(currStack, stackObject, "esp");
-                highlightText(stackObject.currBlock, 0, "highlight");
+                highlightText(getStackBlockParent(currStack, stackObject, false), 0, "highlight", false);
             }
         }
     }
@@ -667,14 +728,14 @@ function parseMov(words, currStack, stackObject) {
             updateRegister(false, updateVal, words[1], stackObject); //Update Register
 
             if (words[1] === "ebp") { //If mov updates EBP
-                removeHighlight(stackObject.ebpBlock, "ebp");
+                removeHighlight(getStackBlockParent(currStack, stackObject, true), "ebp", false);
                 relativeUpdate(currStack, stackObject, "ebp");
-                highlightText(stackObject.ebpBlock, 0, "ebp");
+                highlightText(getStackBlockParent(currStack, stackObject, true), 0, "ebp", false);
             } else if (words[1] === "esp") { //If mov updates ESP
-                removeHighlight(stackObject.currBlock, "highlight");
+                removeHighlight(getStackBlockParent(currStack, stackObject, false), "highlight", false);
                 relativeUpdate(currStack, stackObject, "esp");
 
-                highlightText(stackObject.currBlock, 0, "highlight");
+                highlightText(getStackBlockParent(currStack, stackObject, false), 0, "highlight", false);
             }
 
         } else if (isReg1 && !isReg2) { //If the first arg is a register and the second is a constant
@@ -704,7 +765,7 @@ function parseMov(words, currStack, stackObject) {
                     child.textContent = words[2];
                 }
                 if (words[1].indexOf('+') < 0 && words[1].indexOf('-') < 0) { //Offset is 0
-                    highlightText(child, 0, "highlight");
+                    highlightText(child.parentNode, 0, "highlight", false);
                 }
             }
         } else {
@@ -735,10 +796,10 @@ function parsePush(words, currStack, stackObject) {
             elem.textContent = words[1]; //Immediate value
         }
         if (stackObject.currBlockIdx > 0) { //CurrStackBlock not 0
-            var prevElem = currStack.children[stackObject.currBlockIdx - 1].children[0]; //Previous Stack Element
-            removeHighlight(prevElem, "highlight"); //Remove highlight from that elem
+            var prevElem = currStack.children[stackObject.currBlockIdx - 1]; //Previous Stack Element
+            removeHighlight(prevElem, "highlight", false); //Remove highlight from that elem
         }
-        highlightText(elem, 0, "highlight"); //Highlight current
+        highlightText(getStackBlockParent(currStack, stackObject, false), 0, "highlight", false); //Highlight current
 
         updateRegister(true, -4, "esp", stackObject); //Decrement ESP
     }
@@ -766,22 +827,22 @@ function parsePop(words, currStack, stackObject) {
     }
 
     if (stackObject.currBlockIdx > 0) { //Remove highlight of currElem
-        removeHighlight(elem, "highlight");
+        removeHighlight(getStackBlockParent(currStack, stackObject, false), "highlight", false);
     }
-    var prevElem = currStack.children[stackObject.currBlockIdx - 1].children[0]; //Get prev elem to highlight
-    highlightText(prevElem, 0, "highlight");
+    var prevElem = currStack.children[stackObject.currBlockIdx - 1]; //Get prev elem to highlight
+    highlightText(prevElem, 0, "highlight", false);
 
     if (words[1] === "ebp") { //If EBP, do all the necessary highlight stuff
-        removeHighlight(elem, "ebp");
+        removeHighlight(getStackBlockParent(currStack, stackObject, false), "ebp", false);
         try { //Update Highlighting and stack Object
             relativeUpdate(currStack, stackObject, "ebp");
-            highlightText(stackObject.ebpBlock, 0, "ebp");
+            highlightText(getStackBlockParent(currStack, stackObject, true), 0, "ebp", false);
         } catch (err) {}
     } else if (words[1] === "esp") {
-        removeHighlight(elem, "esp");
+        removeHighlight(getStackBlockParent(currStack, stackObject, false), "esp", false);
         try { //Update Highlighting and stack Object
             relativeUpdate(currStack, stackObject, "esp");
-            highlightText(stackObject.currBlockIdx, 0, "highlight");
+            highlightText(getStackBlockParent(currStack, stackObject, false), 0, "highlight", false);
         } catch (err) {}
         //Counteract the updating that'll always happen at the end. Bad practice but ¯\_(ツ)_/¯
         updateRegister(true, -4, "esp", stackObject);
@@ -800,8 +861,8 @@ function parsePop(words, currStack, stackObject) {
 function parseASM(stackObject, currStack, regStack) {
     var keywords = ["mov", "push", "pop", "movl", "sub", "add", "call", "ret", "leave", "lea"]; //Supported x86 Instructions
     var elem = stackObject.code;
-    removeHighlight(elem, "highlight"); //Remove highlight of previous line
-    highlightText(elem, stackObject.lineNo, "highlight"); //Highlight current line
+    removeHighlight(elem, "highlight", true); //Remove highlight of previous line
+    highlightText(elem, stackObject.lineNo, "highlight", true); //Highlight current line
     var line = stackObject.code.textContent.split("\n")[stackObject.lineNo];
     var line = line.replace(",", "");
     var words = line.trim().split(" ");
